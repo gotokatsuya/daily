@@ -33,6 +33,9 @@ export default class LoggedIn extends Component {
       if (channel.name.includes("daily")) {
         channels.push(channel);
       }
+      if (channel.name.includes("sandbox")) {
+        channels.push(channel);
+      }
     }
     return channels;
   };
@@ -66,7 +69,7 @@ export default class LoggedIn extends Component {
 ${this.state.message}`;
   };
 
-  validateSendBody = () => {
+  validateForm = () => {
     if (this.state.channelId.length == 0) {
       message.warn("Select channel");
       return false;
@@ -82,8 +85,9 @@ ${this.state.message}`;
     return true;
   };
 
-  onSend = () => {
-    if (!this.validateSendBody()) {
+  handleSubmit = e => {
+    e.preventDefault();
+    if (!this.validateForm()) {
       return;
     }
     const channelId = this.state.channelId;
@@ -98,6 +102,9 @@ ${this.state.message}`;
       .then(res => {
         if (res.ok) {
           message.success("Message was sent successfully");
+          this.setState({
+            message: "",
+          });
         } else {
           message.error("Failed");
         }
