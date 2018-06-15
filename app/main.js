@@ -1,6 +1,6 @@
 import path from "path";
 import url from "url";
-import { app, BrowserWindow, Menu, Tray } from "electron";
+import { app, BrowserWindow, Menu } from "electron";
 import dotenv from "dotenv";
 
 const isDevelopment = process.env.NODE_ENV === "development";

@@ -1,199 +1,73 @@
 import React, { Component } from "react";
-import { Layout, Form, Select, Input, DatePicker, Button, message } from "antd";
+import { Layout, Menu } from "antd";
+import Compose from "./loggedin/Compose";
+import Inbox from "./loggedin/Inbox";
+import Sent from "./loggedin/Sent";
 
-import { WebClient } from "@slack/client";
-import { format } from "./../helpers/date";
-import moment from "moment";
+import { fetchUserProfilesForCache } from "./../helpers/slack";
 
 export default class LoggedIn extends Component {
   state = {
-    channels: [],
-    channelId: "",
-    date: moment(),
-    userName: "",
-    message: "",
-  };
-
-  fetchUserName = async () => {
-    const token = this.props.user.accessToken;
-    const web = new WebClient(token);
-    const res = await web.users.profile.get();
-    return res.profile.real_name;
-  };
-
-  fetchChannels = async () => {
-    const channels = [];
-    const token = this.props.user.accessToken;
-    const web = new WebClient(token);
-    const res = await web.channels.list({
-      exclude_archived: true,
-      exclude_members: true,
-    });
-    for (var channel of res.channels) {
-      if (channel.name.includes("daily")) {
-        channels.push(channel);
-      }
-      if (channel.name.includes("sandbox")) {
-        channels.push(channel);
-      }
-    }
-    return channels;
-  };
-
-  onSelectChannel = channelId => {
-    this.setState({
-      channelId: channelId,
-    });
-  };
-
-  onSelectDate = (date, dateString) => {
-    if (!date) {
-      return;
-    }
-    console.log(`selected ${format(date.toDate())}`);
-    this.setState({
-      date: date,
-    });
-  };
-
-  onChangeUserName = e => {
-    this.setState({ userName: e.target.value });
-  };
-
-  onChangeMessage = e => {
-    this.setState({ message: e.target.value });
-  };
-
-  getPostText = () => {
-    return `${format(this.state.date.toDate())} ${this.state.userName} 
-${this.state.message}`;
-  };
-
-  validateForm = () => {
-    if (this.state.channelId.length == 0) {
-      message.warn("Select channel");
-      return false;
-    }
-    if (this.state.userName.length == 0) {
-      message.warn("Write username");
-      return false;
-    }
-    if (this.state.message.length == 0) {
-      message.warn("Write message");
-      return false;
-    }
-    return true;
-  };
-
-  handleSubmit = e => {
-    e.preventDefault();
-    if (!this.validateForm()) {
-      return;
-    }
-    const channelId = this.state.channelId;
-    const text = this.getPostText();
-    const token = this.props.user.accessToken;
-    const web = new WebClient(token);
-    web.chat
-      .postMessage({
-        channel: channelId,
-        text: text,
-      })
-      .then(res => {
-        if (res.ok) {
-          message.success("Message was sent successfully");
-          this.setState({
-            message: "",
-          });
-        } else {
-          message.error("Failed");
-        }
-      });
+    selectedKey: "compose",
   };
 
   componentDidMount() {
-    this.fetchUserName().then(userName => {
-      this.setState({
-        userName: userName,
-      });
-    });
+    this.prefetch();
+  }
 
-    this.fetchChannels().then(channels => {
-      this.setState({
-        channels: channels,
-      });
-    });
+  prefetch() {
+    const token = this.props.user.accessToken;
+    fetchUserProfilesForCache(token);
   }
 
   render() {
-    const formItemLayout = {
-      labelCol: {
-        xs: { span: 24 },
-        sm: { span: 4 },
-      },
-      wrapperCol: {
-        xs: { span: 24 },
-        sm: { span: 16 },
-      },
-    };
-    const tailFormItemLayout = {
-      wrapperCol: {
-        xs: {
-          span: 24,
-          offset: 0,
-        },
-        sm: {
-          span: 16,
-          offset: 4,
-        },
-      },
-    };
-    const channelOptions = this.state.channels.map(channel => {
-      return (
-        <Select.Option value={channel.id} key={channel.id}>
-          {channel.name}
-        </Select.Option>
-      );
-    });
+    let selectedComponent = null;
+    console.log(this.state.selectedKey);
+    switch (this.state.selectedKey) {
+      case "compose":
+        selectedComponent = <Compose user={this.props.user} />;
+        break;
+      case "inbox":
+        selectedComponent = <Inbox user={this.props.user} />;
+        break;
+      case "sent":
+        selectedComponent = <Sent user={this.props.user} />;
+        break;
+    }
     return (
       <Layout className="container loggedIn">
-        <Layout style={{ background: "#fff" }}>
+        <Layout.Sider breakpoint="lg" collapsedWidth="0">
+          <div style={{ paddingLeft: "1rem", paddingTop: "1rem" }}>
+            <h2 style={{ color: "#ffffff" }}>daily</h2>
+          </div>
+          <Menu
+            theme="dark"
+            mode="inline"
+            defaultSelectedKeys={[this.state.selectedKey]}
+            onSelect={selected => {
+              this.setState({
+                selectedKey: selected.key,
+              });
+            }}
+          >
+            <Menu.Item key="compose">
+              <span className="nav-text">Compose</span>
+            </Menu.Item>
+            <Menu.Item key="inbox">
+              <span className="nav-text">Inbox</span>
+            </Menu.Item>
+            <Menu.Item key="sent">
+              <span className="nav-text">Sent</span>
+            </Menu.Item>
+          </Menu>
+        </Layout.Sider>
+        <Layout style={{ background: "#ffffff" }}>
           <Layout.Content style={{ padding: "1rem" }}>
-            <h2>daily</h2>
-            <Form style={{ marginTop: "1rem" }} onSubmit={this.handleSubmit}>
-              <Form.Item {...formItemLayout} label="Channel">
-                <Select onChange={this.onSelectChannel}>
-                  {channelOptions}
-                </Select>
-              </Form.Item>
-              <Form.Item {...formItemLayout} label="Date">
-                <DatePicker
-                  defaultValue={this.state.date}
-                  format={"YYYY/MM/DD"}
-                  onChange={this.onSelectDate}
-                  allowClear={false}
-                />
-              </Form.Item>
-              <Form.Item {...formItemLayout} label="Username">
-                <Input
-                  value={this.state.userName}
-                  onChange={this.onChangeUserName}
-                />
-              </Form.Item>
-              <Form.Item {...formItemLayout} label="Message">
-                <Input.TextArea
-                  autosize={{ minRows: 16, maxRows: 20 }}
-                  value={this.state.message}
-                  onChange={this.onChangeMessage}
-                />
-              </Form.Item>
-              <Form.Item {...tailFormItemLayout}>
-                <Button type="primary" htmlType="submit">
-                  Send
-                </Button>
-              </Form.Item>
-            </Form>
+            {selectedComponent}
           </Layout.Content>
+          <Layout.Footer style={{ textAlign: "center" }}>
+            daily ©2018 Created by gotokatsuya
+          </Layout.Footer>
         </Layout>
       </Layout>
     );
