@@ -1,73 +1,32 @@
 import React, { Component } from "react";
-import { Form, Select, List, Avatar } from "antd";
+import { List, Avatar } from "antd";
 
-import {
-  fetchDailyChannels,
-  fetchChannelMessagesWithUserProfile,
-} from "./../../helpers/slack";
+import { fetchChannelMessagesWithUserProfile } from "./../../helpers/slack";
 
 export default class Inbox extends Component {
   state = {
-    channels: [],
     messages: [],
   };
 
-  fetchChannels = async () => {
+  fetchMessages = async () => {
     const token = this.props.user.accessToken;
-    const channels = await fetchDailyChannels(token);
-    return channels;
-  };
-
-  fetchMessages = async channelId => {
-    const token = this.props.user.accessToken;
+    const channelId = this.props.user.channelId;
     const messages = await fetchChannelMessagesWithUserProfile(
       token,
       channelId
     );
-    return messages;
-  };
-
-  onSelectChannel = channelId => {
-    this.fetchMessages(channelId).then(messages => {
-      this.setState({
-        messages: messages,
-      });
+    this.setState({
+      messages: messages,
     });
   };
 
   componentDidMount() {
-    this.fetchChannels().then(channels => {
-      this.setState({
-        channels: channels,
-      });
-    });
+    this.fetchMessages();
   }
 
   render() {
-    const formItemLayout = {
-      labelCol: {
-        xs: { span: 24 },
-        sm: { span: 4 },
-      },
-      wrapperCol: {
-        xs: { span: 24 },
-        sm: { span: 16 },
-      },
-    };
-    const channelOptions = this.state.channels.map(channel => {
-      return (
-        <Select.Option value={channel.id} key={channel.id}>
-          {channel.name}
-        </Select.Option>
-      );
-    });
     return (
       <div>
-        <Form style={{ marginTop: "1rem" }}>
-          <Form.Item {...formItemLayout} label="Channel">
-            <Select onChange={this.onSelectChannel}>{channelOptions}</Select>
-          </Form.Item>
-        </Form>
         <List
           itemLayout="horizontal"
           dataSource={this.state.messages}

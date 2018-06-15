@@ -1,42 +1,20 @@
 import React, { Component } from "react";
-import { Form, Select, Input, DatePicker, Button, message } from "antd";
+import { Form, Input, DatePicker, Button, message } from "antd";
 import moment from "moment";
 
 import { format } from "./../../helpers/date";
-import { fetchMeProfile, fetchDailyChannels } from "./../../helpers/slack";
 
 export default class Compose extends Component {
   state = {
-    channels: [],
-    channelId: "",
     date: moment(),
-    userName: "",
+    userName: this.props.user.profile.real_name,
     message: "",
-  };
-
-  fetchUserName = async () => {
-    const token = this.props.user.accessToken;
-    const profile = await fetchMeProfile(token);
-    return profile.real_name;
-  };
-
-  fetchChannels = async () => {
-    const token = this.props.user.accessToken;
-    const channels = await fetchDailyChannels(token);
-    return channels;
-  };
-
-  onSelectChannel = channelId => {
-    this.setState({
-      channelId: channelId,
-    });
   };
 
   onSelectDate = (date, dateString) => {
     if (!date) {
       return;
     }
-    console.log(`selected ${format(date.toDate())}`);
     this.setState({
       date: date,
     });
@@ -56,10 +34,6 @@ ${this.state.message}`;
   };
 
   validateForm = () => {
-    if (this.state.channelId.length == 0) {
-      message.warn("Select channel");
-      return false;
-    }
     if (this.state.userName.length == 0) {
       message.warn("Write username");
       return false;
@@ -76,7 +50,7 @@ ${this.state.message}`;
     if (!this.validateForm()) {
       return;
     }
-    const channelId = this.state.channelId;
+    const channelId = this.props.user.channelId;
     const text = this.getPostText();
     const token = this.props.user.accessToken;
     const web = new WebClient(token);
@@ -96,20 +70,6 @@ ${this.state.message}`;
         }
       });
   };
-
-  componentDidMount() {
-    this.fetchUserName().then(userName => {
-      this.setState({
-        userName: userName,
-      });
-    });
-
-    this.fetchChannels().then(channels => {
-      this.setState({
-        channels: channels,
-      });
-    });
-  }
 
   render() {
     const formItemLayout = {
@@ -134,19 +94,9 @@ ${this.state.message}`;
         },
       },
     };
-    const channelOptions = this.state.channels.map(channel => {
-      return (
-        <Select.Option value={channel.id} key={channel.id}>
-          {channel.name}
-        </Select.Option>
-      );
-    });
     return (
       <div>
         <Form style={{ marginTop: "1rem" }} onSubmit={this.handleSubmit}>
-          <Form.Item {...formItemLayout} label="Channel">
-            <Select onChange={this.onSelectChannel}>{channelOptions}</Select>
-          </Form.Item>
           <Form.Item {...formItemLayout} label="Date">
             <DatePicker
               defaultValue={this.state.date}

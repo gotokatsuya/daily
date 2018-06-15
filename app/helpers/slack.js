@@ -57,6 +57,10 @@ export const fetchChannelMessagesWithUserProfile = async (token, channelId) => {
   const messagesWithUserProfile = [];
   const messages = await fetchChannelMessages(token, channelId);
   for (var message of messages) {
+    // thread comment
+    if (message.parent_user_id) {
+      continue;
+    }
     var profile = {};
     if (cacheUserProfiles[message.user]) {
       profile = cacheUserProfiles[message.user];
@@ -70,4 +74,18 @@ export const fetchChannelMessagesWithUserProfile = async (token, channelId) => {
     });
   }
   return messagesWithUserProfile;
+};
+
+export const fetchMeChannelMessages = async (token, channelId, meId) => {
+  const list = [];
+  const messages = await fetchChannelMessages(token, channelId);
+  for (var message of messages) {
+    console.log(message);
+    if (meId == message.user) {
+      list.push({
+        message: message,
+      });
+    }
+  }
+  return list;
 };
