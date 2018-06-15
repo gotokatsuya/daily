@@ -3,6 +3,7 @@
 ## Quick start
 
 ```bash
+yarn install # Dependency installation
 yarn start
 ```
 
