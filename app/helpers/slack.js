@@ -89,3 +89,12 @@ export const fetchMeChannelMessages = async (token, channelId, meId) => {
   }
   return list;
 };
+
+export const sendMessage = async (token, channelId, text) => {
+  const web = new WebClient(token);
+  const res = await web.chat.postMessage({
+    channel: channelId,
+    text: text,
+  });
+  return res;
+};

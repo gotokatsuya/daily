@@ -10,7 +10,7 @@ export default class Sent extends Component {
 
   fetchMessages = async () => {
     const token = this.props.user.accessToken;
-    const channelId = this.props.user.channelId;
+    const channelId = this.props.user.channel.id;
     const meId = this.props.user.id;
     const messages = await fetchMeChannelMessages(token, channelId, meId);
     this.setState({

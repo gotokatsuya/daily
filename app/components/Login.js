@@ -4,6 +4,7 @@ import { Button, Card, Form, Select, message } from "antd";
 import { authorize } from "./../helpers/oauth";
 import { pararels } from "./../helpers/promise";
 import { fetchMeProfile, fetchDailyChannels } from "./../helpers/slack";
+import { clearStorage, reloadWebContents } from "./../helpers/electron";
 
 export default class Login extends Component {
   static propTypes = {
@@ -16,11 +17,14 @@ export default class Login extends Component {
     id: "",
     profile: {},
     channels: [],
-    channelId: "",
+    channel: {},
   };
 
   handleLogin = async () => {
     const authorizeRes = await authorize();
+    if (!authorizeRes.ok) {
+      return;
+    }
     const accessToken = authorizeRes.access_token;
     const id = authorizeRes.user_id;
     this.setState({
@@ -45,13 +49,18 @@ export default class Login extends Component {
   };
 
   onSelectChannel = channelId => {
-    this.setState({
-      channelId: channelId,
-    });
+    for (var channel of this.state.channels) {
+      if (channel.id == channelId) {
+        this.setState({
+          channel: channel,
+        });
+        break;
+      }
+    }
   };
 
   toLoggedin = () => {
-    if (this.state.channelId.length == 0) {
+    if (this.state.channel.id.length == 0) {
       message.warn("Select channel");
       return;
     }
@@ -60,7 +69,7 @@ export default class Login extends Component {
       id: this.state.id,
       profile: this.state.profile,
       loggedIn: this.state.loggedIn,
-      channelId: this.state.channelId,
+      channel: this.state.channel,
     });
   };
 

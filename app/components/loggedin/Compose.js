@@ -3,6 +3,7 @@ import { Form, Input, DatePicker, Button, message } from "antd";
 import moment from "moment";
 
 import { format } from "./../../helpers/date";
+import { sendMessage } from "./../../helpers/slack";
 
 export default class Compose extends Component {
   state = {
@@ -45,30 +46,23 @@ ${this.state.message}`;
     return true;
   };
 
-  handleSubmit = e => {
+  handleSubmit = async e => {
     e.preventDefault();
     if (!this.validateForm()) {
       return;
     }
-    const channelId = this.props.user.channelId;
-    const text = this.getPostText();
     const token = this.props.user.accessToken;
-    const web = new WebClient(token);
-    web.chat
-      .postMessage({
-        channel: channelId,
-        text: text,
-      })
-      .then(res => {
-        if (res.ok) {
-          message.success("Message was sent successfully");
-          this.setState({
-            message: "",
-          });
-        } else {
-          message.error("Failed");
-        }
+    const channelId = this.props.user.channel.id;
+    const text = this.getPostText();
+    const res = await sendMessage(token, channelId, text);
+    if (res.ok) {
+      message.success("Message was sent successfully");
+      this.setState({
+        message: "",
       });
+    } else {
+      message.error("Failed");
+    }
   };
 
   render() {
