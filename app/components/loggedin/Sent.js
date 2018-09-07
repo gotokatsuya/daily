@@ -33,7 +33,12 @@ export default class Sent extends Component {
               <List.Item.Meta
                 avatar={<Avatar src={this.props.user.profile.image_48} />}
                 title={this.props.user.profile.display_name}
-                description={item.message.text}
+                description={item.message.text
+                  .split("\n")
+                  .filter(m => m !== "```")
+                  .map((m, i) => (
+                    <p key={i}>{m}</p>
+                  ))}
               />
             </List.Item>
           )}

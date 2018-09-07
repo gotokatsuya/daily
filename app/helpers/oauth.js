@@ -8,7 +8,8 @@ const BrowserWindow = electron.remote.BrowserWindow;
 const config = {
   clientId: process.env.SLACK_OAUTH_ID,
   clientSecret: process.env.SLACK_OAUTH_SECRET,
-  scope: "users.profile:read channels:read chat:write:user",
+  scope:
+    "channels:read,users.profile:read,chat:write:user,channels:history,users:read",
   authorizationUrl: "https://slack.com/oauth/authorize",
   tokenUrl: "https://slack.com/api/oauth.access",
   redirectUri: process.env.SLACK_OAUTH_REDIRECT_URI,

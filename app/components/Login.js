@@ -4,7 +4,6 @@ import { Button, Card, Form, Select, message } from "antd";
 import { authorize } from "./../helpers/oauth";
 import { pararels } from "./../helpers/promise";
 import { fetchMeProfile, fetchDailyChannels } from "./../helpers/slack";
-import { clearStorage, reloadWebContents } from "./../helpers/electron";
 
 export default class Login extends Component {
   static propTypes = {

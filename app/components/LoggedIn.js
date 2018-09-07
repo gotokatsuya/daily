@@ -5,7 +5,6 @@ import Inbox from "./loggedin/Inbox";
 import Sent from "./loggedin/Sent";
 
 import { fetchUserProfilesForCache } from "./../helpers/slack";
-import { clearCache } from "./../helpers/electron";
 
 export default class LoggedIn extends Component {
   state = {
@@ -24,7 +23,6 @@ export default class LoggedIn extends Component {
   onClickMenu = p => {
     switch (p.key) {
       case "signout":
-        clearCache();
         break;
     }
   };
@@ -42,30 +40,12 @@ export default class LoggedIn extends Component {
         selectedComponent = <Sent user={this.props.user} />;
         break;
     }
-    const menu = (
-      <Menu onClick={this.onClickMenu}>
-        <Menu.Item key="signout">Sign out</Menu.Item>
-      </Menu>
-    );
+
     return (
       <Layout className="container loggedIn">
         <Layout.Sider breakpoint="lg" collapsedWidth="0">
           <div style={{ paddingLeft: "1rem", paddingTop: "1rem" }}>
             <h3 style={{ color: "#fff" }}>{this.props.user.channel.name}</h3>
-            <Dropdown
-              overlay={menu}
-              trigger={["click"]}
-              placement="bottomRight"
-            >
-              <a
-                className="ant-dropdown-link"
-                href="#"
-                style={{ color: "#fff", textDecoration: "none" }}
-              >
-                {this.props.user.profile.display_name}
-                <Icon type="down" />
-              </a>
-            </Dropdown>
           </div>
           <Menu
             theme="dark"
@@ -92,9 +72,6 @@ export default class LoggedIn extends Component {
           <Layout.Content style={{ padding: "1rem" }}>
             {selectedComponent}
           </Layout.Content>
-          <Layout.Footer style={{ textAlign: "center" }}>
-            daily ©2018 Created by gotokatsuya
-          </Layout.Footer>
         </Layout>
       </Layout>
     );

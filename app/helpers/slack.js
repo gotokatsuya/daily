@@ -80,7 +80,6 @@ export const fetchMeChannelMessages = async (token, channelId, meId) => {
   const list = [];
   const messages = await fetchChannelMessages(token, channelId);
   for (var message of messages) {
-    console.log(message);
     if (meId == message.user) {
       list.push({
         message: message,
